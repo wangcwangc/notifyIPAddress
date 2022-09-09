@@ -13,6 +13,7 @@ urllib3.disable_warnings()
 
 def get_host_ipv6():
     addresses = netifaces.ifaddresses("en0")
+    # addresses = netifaces.ifaddresses("bond0") # docker
     ipv6_addr_list = addresses[netifaces.AF_INET6]
     for addr in ipv6_addr_list:
         ipv6 = addr["addr"]
