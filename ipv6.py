@@ -69,8 +69,19 @@ def notify_by_webhook(webhook, ipv6):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
     }
     payload_message = {
-        "msg_type": "post", "content": {"post": {"zh_cn": {"title": "你的公网IP变了", "content": [
-            [{"tag": "text", "text": str("IPV6地址：http://[%s]" % ipv6)}]]}}}}
+        "msg_type": "post",
+        "content": {
+            "post": {
+                "zh_cn": {
+                    "title": "你的公网IP变了",
+                    "content": [[{
+                        "tag": "text",
+                        "text": "IPV6地址：http://[%s]" % ipv6
+                    }]]
+                }
+            }
+        }
+    }
 
     try:
         res = requests.post(webhook, data=json.dumps(payload_message), verify=False, headers=headers)
@@ -81,6 +92,7 @@ def notify_by_webhook(webhook, ipv6):
                 print("ipv6 通知 : " + msg)
             else:
                 print("通知失败")
+                print(res.json())
     except Exception as e:
         print(e)
 
