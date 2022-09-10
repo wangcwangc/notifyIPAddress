@@ -25,7 +25,7 @@ def get_host_ipv6():
 def loop_monitor():
     while True:
         main()
-        time.sleep(60)  # 每分钟运行一次
+        time.sleep(600)  # 每10分钟运行一次
 
 
 def read_config():
@@ -62,6 +62,8 @@ def main():
         ipv6 = new_ipv6
         write_ipv6_to_config(ipv6)
         notify_by_webhook(webhook, ipv6)
+    else:
+        print("ipv6 未变更！ 地址为 : " + new_ipv6)
 
 
 def notify_by_webhook(webhook, ipv6):
