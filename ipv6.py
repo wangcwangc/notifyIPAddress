@@ -13,7 +13,7 @@ urllib3.disable_warnings()
 
 def get_host_ipv6():
     addresses = netifaces.ifaddresses("en0")
-    # addresses = netifaces.ifaddresses("bond0") # docker
+    # addresses = netifaces.ifaddresses("bond0")  # docker
     ipv6_addr_list = addresses[netifaces.AF_INET6]
     for addr in ipv6_addr_list:
         ipv6 = addr["addr"]
@@ -79,7 +79,8 @@ def notify_by_webhook(webhook, ipv6):
                     "title": "你的公网IP变了",
                     "content": [[{
                         "tag": "text",
-                        "text": "IPV6地址：http://[%s]" % ipv6
+                        "text": "IPV6 HTTP地址： http://[%s] \n"
+                                "IPV6 地址： %s" % (ipv6, ipv6)
                     }]]
                 }
             }
