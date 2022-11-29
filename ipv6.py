@@ -1,6 +1,8 @@
 # author : wangcwangc
 # time : 2022/9/8 14:27
 import json
+import os
+from pathlib import Path
 
 import netifaces
 import time
@@ -22,6 +24,11 @@ def get_host_ipv6():
         return ipv6
 
 
+def get_host_ipv4():
+    ipv4 = requests.get('https://checkip.amazonaws.com').text.strip()
+    return ipv4
+
+
 def loop_monitor():
     while True:
         main()
@@ -29,44 +36,58 @@ def loop_monitor():
 
 
 def read_config():
-    file = "config.ini"
+    path = Path(__file__)
+    root_dir = path.parent.absolute()
+    config_path = os.path.join(root_dir, "config.ini")
+    # file = "config.ini"
     config = configparser.ConfigParser()
-    config.read(file)
+    config.read(config_path)
     webhook = config.get("url", "webhook")
     if webhook == "":
         print("请配置webhook地址")
         exit(0)
     ipv6 = config.get("ip", "ipv6")
-    if ipv6 == "":
+    ipv4 = config.get("ip", "ipv4")
+    if ipv6 == "" or ipv4 == "":
         ipv6 = get_host_ipv6()
+        ipv4 = get_host_ipv4()
         config.set("ip", "ipv6", ipv6)
+        config.set("ip", "ipv4", ipv4)
         config.write(open("config.ini", "w"))
-    return webhook, ipv6
+    return webhook, ipv6, ipv4
 
 
-def write_ipv6_to_config(ipv6):
-    file = "config.ini"
+def write_ip_to_config(ipv6, ipv4):
+    path = Path(__file__)
+    root_dir = path.parent.absolute()
+    config_path = os.path.join(root_dir, "config.ini")
+    # file = "config.ini"
     config = configparser.ConfigParser()
-    config.read(file)
+    config.read(config_path)
     config.set("ip", "ipv6", ipv6)
+    config.set("ip", "ipv4", ipv4)
     config.write(open("config.ini", "w"))
 
 
 def main():
-    webhook, ipv6 = read_config()
+    webhook, ipv6, ipv4 = read_config()
     new_ipv6 = get_host_ipv6()
-    if ipv6 != new_ipv6:
-        print("ipv6 已变更！")
+    new_ipv4 = get_host_ipv4()
+    if ipv6 != new_ipv6 or ipv4 != new_ipv4:
+        print("ip 已变更！")
         print("old ipv6 : " + ipv6)
         print("new ipv6 : " + new_ipv6)
+        print("old ipv4 : " + ipv4)
+        print("new ipv4 : " + new_ipv4)
         ipv6 = new_ipv6
-        write_ipv6_to_config(ipv6)
-        notify_by_webhook(webhook, ipv6)
+        ipv4 = new_ipv4
+        write_ip_to_config(ipv6, ipv4)
+        notify_by_webhook(webhook, ipv6, ipv4)
     else:
         print("ipv6 未变更！ 地址为 : " + new_ipv6)
 
 
-def notify_by_webhook(webhook, ipv6):
+def notify_by_webhook(webhook, ipv6, ipv4):
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
@@ -80,7 +101,8 @@ def notify_by_webhook(webhook, ipv6):
                     "content": [[{
                         "tag": "text",
                         "text": "IPV6 HTTP地址： http://[%s] \n"
-                                "IPV6 地址： %s" % (ipv6, ipv6)
+                                "IPV6 地址： %s \n"
+                                "IPV4 地址： %s" % (ipv6, ipv6, ipv4)
                     }]]
                 }
             }
@@ -102,13 +124,15 @@ def notify_by_webhook(webhook, ipv6):
 
 
 def first_notify_ipv6():
-    webhook, ipv6 = read_config()
+    webhook, ipv6, ipv4 = read_config()
     ipv6 = get_host_ipv6()
+    ipv4 = get_host_ipv4()
     print("第一次运行")
     print("webhook : " + webhook)
     print("ipv6 : " + ipv6)
-    notify_by_webhook(webhook, ipv6)
-    write_ipv6_to_config(ipv6)
+    print("ipv4 : " + ipv4)
+    notify_by_webhook(webhook, ipv6, ipv4)
+    write_ip_to_config(ipv6, ipv4)
 
 
 if __name__ == "__main__":
