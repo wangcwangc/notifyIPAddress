@@ -53,7 +53,7 @@ def read_config():
         ipv4 = get_host_ipv4()
         config.set("ip", "ipv6", ipv6)
         config.set("ip", "ipv4", ipv4)
-        config.write(open("config.ini", "w"))
+        config.write(open(config_path, "w"))
     return webhook, ipv6, ipv4
 
 
@@ -66,7 +66,7 @@ def write_ip_to_config(ipv6, ipv4):
     config.read(config_path)
     config.set("ip", "ipv6", ipv6)
     config.set("ip", "ipv4", ipv4)
-    config.write(open("config.ini", "w"))
+    config.write(open(config_path, "w"))
 
 
 def main():
